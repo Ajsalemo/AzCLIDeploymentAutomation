@@ -38,21 +38,17 @@ az_create_webapp() {
         exit 1
     # If the deployment type is set to Git(local git) or is empty, also default to local git
     elif [[ "$DEPLOYMENT_SOURCE_TYPE" == "" || "$DEPLOYMENT_SOURCE_TYPE" == "git" || -z "$DEPLOYMENT_SOURCE_TYPE" ]]; then
-        echo "Hello world"
-        echo $DEPLOYMENT_RESOURCE_GROUP
-        echo $DEPLOYMENT_APP_SERVICE_PLAN
-        echo $DEPLOYMENT_APP_NAME
-        echo $DEPLOYMENT_RUNTIME_TYPE
-        echo $DEPLOYMENT_SOURCE_TYPE
-        # az webapp create -g "$DEPLOYMENT_RESOURCE_GROUP" -p "$DEPLOYMENT_APP_SERVICE_PLAN" -n "$DEPLOYMENT_APP_NAME" --runtime "$DEPLOYMENT_RUNTIME_TYPE" --deployment-local-git
+        az webapp create -g "$DEPLOYMENT_RESOURCE_GROUP" -p "$DEPLOYMENT_APP_SERVICE_PLAN" -n "$DEPLOYMENT_APP_NAME" --runtime "$DEPLOYMENT_RUNTIME_TYPE" --deployment-local-git
     # If the deployment type is set to ACR, run the creation command with ACR and the Image to provide
     elif [ "$DEPLOYMENT_SOURCE_TYPE" == "acr" ]; then
         if [ -z "$ACR_IMAGE" ]; then
-            echo "No Azure Container Registry Image provided in arguments. Defaulting to none."
-            # az webapp create -g "$DEPLOYMENT_RESOURCE_GROUP" -p "$DEPLOYMENT_APP_SERVICE_PLAN" -n "$DEPLOYMENT_APP_NAME" -i "$ACR_IMAGE"
+            echo "ERROR: No Azure Container Registry Image provided in arguments."
+            echo "ERROR: An Image must be provided in the format of mycontainerregistry.azurecr.io/image:tag"
         else
             echo "Creating a Web App for Containers instance with Image: $ACR_IMAGE"
-            # az webapp create -g "$DEPLOYMENT_RESOURCE_GROUP" -p "$DEPLOYMENT_APP_SERVICE_PLAN" -n "$DEPLOYMENT_APP_NAME" -i "$ACR_IMAGE"
+            echo "Logging into Azure Container Registry.."
+            az acr login
+            az webapp create -g "$DEPLOYMENT_RESOURCE_GROUP" -p "$DEPLOYMENT_APP_SERVICE_PLAN" -n "$DEPLOYMENT_APP_NAME" -i "$ACR_IMAGE"
         fi
     else
         echo "An error has occurred."
