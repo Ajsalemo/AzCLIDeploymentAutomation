@@ -47,7 +47,6 @@ az_create_webapp() {
         else
             echo "Creating a Web App for Containers instance with Image: $ACR_IMAGE"
             echo "Logging into Azure Container Registry.."
-            az acr login
             az webapp create -g "$DEPLOYMENT_RESOURCE_GROUP" -p "$DEPLOYMENT_APP_SERVICE_PLAN" -n "$DEPLOYMENT_APP_NAME" -i "$ACR_IMAGE"
         fi
     else
