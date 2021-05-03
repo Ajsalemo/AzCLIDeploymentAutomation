@@ -1,19 +1,39 @@
 #!/bin/bash
 
-# Username and password for non-interactive login
-AZ_USERNAME=$1
-AZ_PASSWORD=$2
+while getopts 'u:p:r:g:a:t:s:i:' arg; do
+    case $arg in
+    # Username and password args for non interative deployments
+    u) AZ_USERNAME=$OPTARG ;;
+    p) AZ_PASSWORD=$OPTARG ;;
+    # Deployment arguments
+    r) DEPLOYMENT_RESOURCE_GROUP=$OPTARG ;;
+    g) DEPLOYMENT_APP_SERVICE_PLAN=$OPTARG ;;
+    a) DEPLOYMENT_APP_NAME=$OPTARG ;;
+    t) DEPLOYMENT_RUNTIME_TYPE=$OPTARG ;;
+    s) DEPLOYMENT_SOURCE_TYPE=$OPTARG ;;
+    i) ACR_IMAGE=$OPTARG ;;
+    esac
 
-# Deployment arguments
-DEPLOYMENT_RESOURCE_GROUP=$3
-DEPLOYMENT_APP_SERVICE_PLAN=$4
-DEPLOYMENT_APP_NAME=$5
-DEPLOYMENT_RUNTIME_TYPE=$6
-DEPLOYMENT_SOURCE_TYPE=$7
-ACR_IMAGE=$8
+    # u - Username for az cli login
+    # p - Password for az cl login
+    # r - Resource Group to deploy the application into
+    # g - App Service Plan to deploy the application into
+    # a - Application name
+    # t - Runtime type, ex: "node|12-lts" or "python|3.6"
+    # s - Deployment source, either "git" for Local Git or "acr" for Azure Container Registry
+    # i - If using ACR as a deployment source, then this argument is used as the Image to be specified when deploying
+done
 
 # Complete the initial log in non-interactively
 az_login() {
+    echo "$AZ_USERNAME"
+    echo "$AZ_PASSWORD"
+    echo "$DEPLOYMENT_RESOURCE_GROUP"
+    echo "$DEPLOYMENT_APP_SERVICE_PLAN"
+    echo "$DEPLOYMENT_APP_NAME"
+    echo "$DEPLOYMENT_RUNTIME_TYPE"
+    echo "$DEPLOYMENT_SOURCE_TYPE"
+    echo "$ACR_IMAGE"
     if [ -z "$AZ_USERNAME" ]; then
         echo "ERROR: Username must be supplied"
         exit 1
@@ -33,17 +53,23 @@ az_login() {
 
 az_create_webapp() {
     # Throw an error if any positional arguments are missing
-    if [[ -z "$DEPLOYMENT_RESOURCE_GROUP" || -z "$DEPLOYMENT_APP_SERVICE_PLAN" || -z "$DEPLOYMENT_APP_NAME" || -z "$DEPLOYMENT_RUNTIME_TYPE" ]]; then
+    if [[ -z "$DEPLOYMENT_RESOURCE_GROUP" || -z "$DEPLOYMENT_APP_SERVICE_PLAN" || -z "$DEPLOYMENT_APP_NAME" ]]; then
         echo "ERROR: Missing arguments. Arguments provided must contain the Resource Group, App Service Plan, Web App Name and Runtime type"
         exit 1
     # If the deployment type is set to Git(local git) or is empty, also default to local git
     elif [[ "$DEPLOYMENT_SOURCE_TYPE" == "" || "$DEPLOYMENT_SOURCE_TYPE" == "git" || -z "$DEPLOYMENT_SOURCE_TYPE" ]]; then
+        if [ -z "$DEPLOYMENT_RUNTIME_TYPE" ]; then
+            echo "ERROR: When using local git as a deployment source type, a runtime type must be specified."
+            exit 1
+        fi
+        # If deployment is set to local git and the runtime type is specified, go through with creation
         az webapp create -g "$DEPLOYMENT_RESOURCE_GROUP" -p "$DEPLOYMENT_APP_SERVICE_PLAN" -n "$DEPLOYMENT_APP_NAME" --runtime "$DEPLOYMENT_RUNTIME_TYPE" --deployment-local-git
     # If the deployment type is set to ACR, run the creation command with ACR and the Image to provide
     elif [ "$DEPLOYMENT_SOURCE_TYPE" == "acr" ]; then
         if [ -z "$ACR_IMAGE" ]; then
             echo "ERROR: No Azure Container Registry Image provided in arguments."
             echo "ERROR: An Image must be provided in the format of mycontainerregistry.azurecr.io/image:tag"
+            exit 1
         else
             echo "Creating a Web App for Containers instance with Image: $ACR_IMAGE"
             echo "Logging into Azure Container Registry.."
@@ -51,12 +77,15 @@ az_create_webapp() {
         fi
     else
         echo "An error has occurred."
+        exit 1
     fi
 }
 
+# Parent function
 execute_func() {
     az_login
     az_create_webapp
 }
 
+# Main
 execute_func
