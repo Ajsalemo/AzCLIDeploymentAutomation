@@ -1,17 +1,33 @@
 #!/bin/bash
 
-while getopts 'u:p:r:g:a:t:s:i:' arg; do
+print_help() {
+    echo "Usage: <command> options [parameters]"
+    echo "Options:"
+    echo "  -u | required - Username to sign in with for AZ CLI."
+    echo "  -p | required - Password to sign in with for AZ CLI."
+    echo "  -r | required - The Resource Group to target."
+    echo "  -g | required - The App Service Plan to target."
+    echo "  -a | required - The name of the App Service to create."
+    echo "  -t | optional - If using 'git' as your deployment source, this is required. Otherwise it is not. Example: 'node|12-lts' or 'python|3.6'."
+    echo "  -s | optional - Values are either git or acr. Not specifying an option has this default to git."
+    echo "  -i | optional - If using 'acr' as your deployment source, this is required. Otherwise it is not. Example: 'mycontainerregistry.azurecr.io/image:tag'"
+    exit 1
+}
+
+while getopts ':u:p:r:g:a:t:s:i:' arg; do
     case $arg in
-    # Username and password args for non interative deployments
-    u) AZ_USERNAME=$OPTARG ;;
-    p) AZ_PASSWORD=$OPTARG ;;
-    # Deployment arguments
-    r) DEPLOYMENT_RESOURCE_GROUP=$OPTARG ;;
-    g) DEPLOYMENT_APP_SERVICE_PLAN=$OPTARG ;;
-    a) DEPLOYMENT_APP_NAME=$OPTARG ;;
-    t) DEPLOYMENT_RUNTIME_TYPE=$OPTARG ;;
-    s) DEPLOYMENT_SOURCE_TYPE=$OPTARG ;;
-    i) ACR_IMAGE=$OPTARG ;;
+        # Username and password args for non interative deployments
+        u) AZ_USERNAME=$OPTARG ;;
+        p) AZ_PASSWORD=$OPTARG ;;
+        # Deployment arguments
+        r) DEPLOYMENT_RESOURCE_GROUP=$OPTARG ;;
+        g) DEPLOYMENT_APP_SERVICE_PLAN=$OPTARG ;;
+        a) DEPLOYMENT_APP_NAME=$OPTARG ;;
+        t) DEPLOYMENT_RUNTIME_TYPE=$OPTARG ;;
+        s) DEPLOYMENT_SOURCE_TYPE=$OPTARG ;;
+        i) ACR_IMAGE=$OPTARG ;;
+        # Parameter for help and any other arguments that aren't specified
+        \?) print_help ;;
     esac
 
     # u - Username for az cli login
@@ -26,14 +42,6 @@ done
 
 # Complete the initial log in non-interactively
 az_login() {
-    echo "$AZ_USERNAME"
-    echo "$AZ_PASSWORD"
-    echo "$DEPLOYMENT_RESOURCE_GROUP"
-    echo "$DEPLOYMENT_APP_SERVICE_PLAN"
-    echo "$DEPLOYMENT_APP_NAME"
-    echo "$DEPLOYMENT_RUNTIME_TYPE"
-    echo "$DEPLOYMENT_SOURCE_TYPE"
-    echo "$ACR_IMAGE"
     if [ -z "$AZ_USERNAME" ]; then
         echo "ERROR: Username must be supplied"
         exit 1
