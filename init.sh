@@ -55,6 +55,7 @@ az_login() {
         echo "Logging in.."
         # Gets the first subscription ID in the list of available subs
         # NOTE: The sub being targeted in the 0 index may not correlate to others using this same command
+        # This is specific to my account
         LOGIN_AND_GET_SUB=$(az login -u "$AZ_USERNAME" -p "$AZ_PASSWORD" --query "[[0].id]" -o tsv)
         echo "Setting subscription context to Subscription ID: $LOGIN_AND_GET_SUB.."
         az account set --subscription $LOGIN_AND_GET_SUB
