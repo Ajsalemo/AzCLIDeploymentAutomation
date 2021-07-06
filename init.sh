@@ -40,6 +40,9 @@ while getopts ':u:p:r:g:a:t:s:i:' arg; do
     # i - If using ACR as a deployment source, then this argument is used as the Image to be specified when deploying
 done
 
+LOGIN_AND_GET_SUB=""
+# Storing these in an intermediate variable to use later
+
 # Complete the initial log in non-interactively
 az_login() {
     if [ -z "$AZ_USERNAME" ]; then
@@ -89,10 +92,18 @@ az_create_webapp() {
     fi
 }
 
+# Enable logging after creation so this doesn't have to be done through the portal
+az_enable_logging() {
+    echo "Enabling App Service Logs.."
+    # This defaults to a log retention of 3 days and a quota of 100MB
+    az webapp log config --name "$DEPLOYMENT_APP_NAME" --resource-group "$DEPLOYMENT_RESOURCE_GROUP" --docker-container-logging filesystem
+}
+
 # Parent function
 execute_func() {
     az_login
     az_create_webapp
+    az_enable_logging
 }
 
 # Main
