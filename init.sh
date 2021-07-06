@@ -40,8 +40,6 @@ while getopts ':u:p:r:g:a:t:s:i:' arg; do
     # i - If using ACR as a deployment source, then this argument is used as the Image to be specified when deploying
 done
 
-LOGIN_AND_GET_SUB=""
-# Storing these in an intermediate variable to use later
 
 # Complete the initial log in non-interactively
 az_login() {
