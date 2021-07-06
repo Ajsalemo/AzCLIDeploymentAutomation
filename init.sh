@@ -40,6 +40,8 @@ while getopts ':u:p:r:g:a:t:s:i:' arg; do
     # i - If using ACR as a deployment source, then this argument is used as the Image to be specified when deploying
 done
 
+# Creating this out of function scope to be re-used later
+LOGIN_AND_GET_SUB=""
 
 # Complete the initial log in non-interactively
 az_login() {
@@ -97,11 +99,27 @@ az_enable_logging() {
     az webapp log config --name "$DEPLOYMENT_APP_NAME" --resource-group "$DEPLOYMENT_RESOURCE_GROUP" --docker-container-logging filesystem
 }
 
+# Extract publishing credentials for local git if Git is specified as the deployment type
+az_extract_publishing_credentials() {
+    if [[ "$DEPLOYMENT_SOURCE_TYPE" == "" || "$DEPLOYMENT_SOURCE_TYPE" == "git" || -z "$DEPLOYMENT_SOURCE_TYPE" ]]; then
+        if [ -z "$DEPLOYMENT_RUNTIME_TYPE" ]; then
+            echo "ERROR: When using local git as a deployment source type, a runtime type must be specified."
+            exit 1
+        fi
+        PUBLISHING_CREDENTIAL_QUERY=$(az webapp deployment list-publishing-credentials --name "$DEPLOYMENT_APP_NAME" --resource-group "$DEPLOYMENT_RESOURCE_GROUP" --subscription "$LOGIN_AND_GET_SUB" --query "[publishingUserName, publishingPassword]" -o tsv)
+        echo "-------------------------------- Publishing Credentials --------------------------------"
+        echo "--------------------------- Output is Username and Password ----------------------------"
+        echo "----------------------------------------------------------------------------------------"
+        echo "$PUBLISHING_CREDENTIAL_QUERY"
+    fi
+}
+
 # Parent function
 execute_func() {
     az_login
     az_create_webapp
     az_enable_logging
+    az_extract_publishing_credentials
 }
 
 # Main
