@@ -14,15 +14,15 @@ print_help() {
 
 while getopts ':u:p:r:g:a:t:s:i:' arg; do
     case $arg in
-        # Deployment arguments
-        r) DEPLOYMENT_RESOURCE_GROUP=$OPTARG ;;
-        g) DEPLOYMENT_APP_SERVICE_PLAN=$OPTARG ;;
-        a) DEPLOYMENT_APP_NAME=$OPTARG ;;
-        t) DEPLOYMENT_RUNTIME_TYPE=$OPTARG ;;
-        s) DEPLOYMENT_SOURCE_TYPE=$OPTARG ;;
-        i) ACR_IMAGE=$OPTARG ;;
-        # Parameter for help and any other arguments that aren't specified
-        \?) print_help ;;
+    # Deployment arguments
+    r) DEPLOYMENT_RESOURCE_GROUP=$OPTARG ;;
+    g) DEPLOYMENT_APP_SERVICE_PLAN=$OPTARG ;;
+    a) DEPLOYMENT_APP_NAME=$OPTARG ;;
+    t) DEPLOYMENT_RUNTIME_TYPE=$OPTARG ;;
+    s) DEPLOYMENT_SOURCE_TYPE=$OPTARG ;;
+    i) ACR_IMAGE=$OPTARG ;;
+    # Parameter for help and any other arguments that aren't specified
+    \?) print_help ;;
     esac
 
     # r - Resource Group to deploy the application into
@@ -38,15 +38,16 @@ LOGIN_AND_GET_SUB=""
 
 # Complete the initial log in non-interactively
 az_set_subscription() {
-        echo "Getting subscription information.."
-        # Set the subscription to the ID generated when running az account show - after the user logs in (if they need to with az cli)
-        LOGIN_AND_GET_SUB=$(az account show --query "id" -o tsv)
-        if [[ "$LOGIN_AND_GET_SUB" == "" || -z "$LOGIN_AND_GET_SUB" ]]; then
-            echo "No subscription found. Please login with the az cli using the `az login` command"
-        fi
-        echo "Setting subscription context to Subscription ID: $LOGIN_AND_GET_SUB.."
-        az account set --subscription $LOGIN_AND_GET_SUB
-        echo "Subscription set.."
+    echo "Getting subscription information.."
+    # Set the subscription to the ID generated when running az account show - after the user logs in (if they need to with az cli)
+    LOGIN_AND_GET_SUB=$(az account show --query "id" -o tsv)
+    if [[ "$LOGIN_AND_GET_SUB" == "" || -z "$LOGIN_AND_GET_SUB" ]]; then
+        echo "No subscription found. Please login with the az cli using the $(az login) command"
+        exit 1
+    fi
+    echo "Setting subscription context to Subscription ID: $LOGIN_AND_GET_SUB.."
+    az account set --subscription $LOGIN_AND_GET_SUB
+    echo "Subscription set.."
 }
 
 az_create_webapp() {
