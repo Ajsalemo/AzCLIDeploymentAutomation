@@ -3,8 +3,6 @@
 print_help() {
     echo "Usage: <command> options [parameters]"
     echo "Options:"
-    echo "  -u | required - Username to sign in with for AZ CLI."
-    echo "  -p | required - Password to sign in with for AZ CLI."
     echo "  -r | required - The Resource Group to target."
     echo "  -g | required - The App Service Plan to target."
     echo "  -a | required - The name of the App Service to create."
@@ -16,9 +14,6 @@ print_help() {
 
 while getopts ':u:p:r:g:a:t:s:i:' arg; do
     case $arg in
-        # Username and password args for non interative deployments
-        u) AZ_USERNAME=$OPTARG ;;
-        p) AZ_PASSWORD=$OPTARG ;;
         # Deployment arguments
         r) DEPLOYMENT_RESOURCE_GROUP=$OPTARG ;;
         g) DEPLOYMENT_APP_SERVICE_PLAN=$OPTARG ;;
@@ -30,8 +25,6 @@ while getopts ':u:p:r:g:a:t:s:i:' arg; do
         \?) print_help ;;
     esac
 
-    # u - Username for az cli login
-    # p - Password for az cl login
     # r - Resource Group to deploy the application into
     # g - App Service Plan to deploy the application into
     # a - Application name
@@ -44,23 +37,16 @@ done
 LOGIN_AND_GET_SUB=""
 
 # Complete the initial log in non-interactively
-az_login() {
-    if [ -z "$AZ_USERNAME" ]; then
-        echo "ERROR: Username must be supplied"
-        exit 1
-    elif [ -z "$AZ_PASSWORD" ]; then
-        echo "ERROR: Password must be supplied"
-        exit 1
-    else
-        echo "Logging in.."
-        # Gets the first subscription ID in the list of available subs
-        # NOTE: The sub being targeted in the 0 index may not correlate to others using this same command
-        # This is specific to my account
-        LOGIN_AND_GET_SUB=$(az login -u "$AZ_USERNAME" -p "$AZ_PASSWORD" --query "[[0].id]" -o tsv)
+az_set_subscription() {
+        echo "Getting subscription information.."
+        # Set the subscription to the ID generated when running az account show - after the user logs in (if they need to with az cli)
+        LOGIN_AND_GET_SUB=$(az account show --query "id" -o tsv)
+        if [[ "$LOGIN_AND_GET_SUB" == "" || -z "$LOGIN_AND_GET_SUB" ]]; then
+            echo "No subscription found. Please login with the az cli using the `az login` command"
+        fi
         echo "Setting subscription context to Subscription ID: $LOGIN_AND_GET_SUB.."
         az account set --subscription $LOGIN_AND_GET_SUB
-        echo "Logged in.."
-    fi
+        echo "Subscription set.."
 }
 
 az_create_webapp() {
@@ -117,7 +103,7 @@ az_extract_publishing_credentials() {
 
 # Parent function
 execute_func() {
-    az_login
+    az_set_subscription
     az_create_webapp
     az_enable_logging
     az_extract_publishing_credentials
