@@ -1,12 +1,10 @@
 # AzCLIDeploymentAutomation
 
-A script to automate the process of Azure Web App creation to a degree. This was to speed up personal tasks of creation so scope/usage may not work for everyone. This will either create a Web App with a "Blessed" Image or a Web Apps for Container and specifying an existing Image in an already created ACR(Azure Container Registry).
+A script to automate the process of Azure Web App creation to a degree, created for my laziness. This was to speed up personal tasks of creation so scope/usage may not work for everyone. This will either create a Web App with a "Blessed" Image or a Web Apps for Container and specifying an existing Image in an already created ACR(Azure Container Registry).
 
 ## Usage 
 Usage: <[command]> options [parameters]
 - Options:
-    - -u | required - Username to sign in with for AZ CLI.
-    - -p | required - Password to sign in with for AZ CLI.
     - -r | required - The Resource Group to target.
     - -g | required - The App Service Plan to target.
     - -a | required - The name of the App Service to create.
