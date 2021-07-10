@@ -42,7 +42,7 @@ az_set_subscription() {
     # Set the subscription to the ID generated when running az account show - after the user logs in (if they need to with az cli)
     LOGIN_AND_GET_SUB=$(az account show --query "id" -o tsv)
     if [[ "$LOGIN_AND_GET_SUB" == "" || -z "$LOGIN_AND_GET_SUB" ]]; then
-        echo "No subscription found. Please login with the az cli using the $(az login) command"
+        echo "No subscription found. Please login with the az cli using the 'az login' command"
         exit 1
     fi
     echo "Setting subscription context to Subscription ID: $LOGIN_AND_GET_SUB.."
