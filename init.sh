@@ -3,21 +3,21 @@
 print_help() {
     echo "Usage: <command> options [parameters]"
     echo "Options:"
-    echo "  -r | required - The Resource Group to target."
-    echo "  -g | required - The App Service Plan to target."
-    echo "  -a | required - The name of the App Service to create."
+    echo "  -g | required - The Resource Group to target."
+    echo "  -a | required - The App Service Plan to target."
+    echo "  -n | required - The name of the App Service to create."
     echo "  -t | optional - If using 'git' as your deployment source, this is required. Otherwise it is not. Example: 'node|12-lts' or 'python|3.6'."
     echo "  -s | optional - Values are either git or acr. Not specifying an option has this default to git."
     echo "  -i | optional - If using 'acr' as your deployment source, this is required. Otherwise it is not. Example: 'mycontainerregistry.azurecr.io/image:tag'"
     exit 1
 }
 
-while getopts ':u:p:r:g:a:t:s:i:' arg; do
+while getopts ':g:a:n:t:s:i:' arg; do
     case $arg in
     # Deployment arguments
-    r) DEPLOYMENT_RESOURCE_GROUP=$OPTARG ;;
-    g) DEPLOYMENT_APP_SERVICE_PLAN=$OPTARG ;;
-    a) DEPLOYMENT_APP_NAME=$OPTARG ;;
+    g) DEPLOYMENT_RESOURCE_GROUP=$OPTARG ;;
+    a) DEPLOYMENT_APP_SERVICE_PLAN=$OPTARG ;;
+    n) DEPLOYMENT_APP_NAME=$OPTARG ;;
     t) DEPLOYMENT_RUNTIME_TYPE=$OPTARG ;;
     s) DEPLOYMENT_SOURCE_TYPE=$OPTARG ;;
     i) ACR_IMAGE=$OPTARG ;;
@@ -25,9 +25,9 @@ while getopts ':u:p:r:g:a:t:s:i:' arg; do
     \?) print_help ;;
     esac
 
-    # r - Resource Group to deploy the application into
-    # g - App Service Plan to deploy the application into
-    # a - Application name
+    # a - Resource Group to deploy the application into
+    # a - App Service Plan to deploy the application into
+    # n - Application name
     # t - Runtime type, ex: "node|12-lts" or "python|3.6"
     # s - Deployment source, either "git" for Local Git or "acr" for Azure Container Registry
     # i - If using ACR as a deployment source, then this argument is used as the Image to be specified when deploying
@@ -96,9 +96,10 @@ az_extract_publishing_credentials() {
         fi
         PUBLISHING_CREDENTIAL_QUERY=$(az webapp deployment list-publishing-credentials --name "$DEPLOYMENT_APP_NAME" --resource-group "$DEPLOYMENT_RESOURCE_GROUP" --subscription "$LOGIN_AND_GET_SUB" --query "[publishingUserName, publishingPassword]" -o tsv)
         echo "-------------------------------- Publishing Credentials --------------------------------"
-        echo "--------------------------- Output is Username and Password ----------------------------"
+        echo "--------------------------- Output is username, password and Git clone URI ----------------------------"
         echo "----------------------------------------------------------------------------------------"
         echo "$PUBLISHING_CREDENTIAL_QUERY"
+        echo "https://$DEPLOYMENT_APP_NAME.scm.azurewebsites.net:443/$DEPLOYMENT_APP_NAME.git"
     fi
 }
 
