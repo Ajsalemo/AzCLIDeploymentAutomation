@@ -25,7 +25,7 @@ while getopts ':g:a:n:t:s:i:' arg; do
     \?) print_help ;;
     esac
 
-    # a - Resource Group to deploy the application into
+    # g - Resource Group to deploy the application into
     # a - App Service Plan to deploy the application into
     # n - Application name
     # t - Runtime type, ex: "node|12-lts" or "python|3.6"
